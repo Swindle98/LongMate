@@ -1,3 +1,3 @@
-import pandas as pd
-import alpha
-import CountsTable
+from .countsTable import CountsTable
+
+print("longmate imported")

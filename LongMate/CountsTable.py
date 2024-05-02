@@ -1,4 +1,5 @@
-
+import pandas as pd
+from . import diversity
 
 class CountsTable:
     """
@@ -6,76 +7,102 @@ class CountsTable:
     """
         # Constructor
 
-    def __init__(self, df, timepoints, groups):
-
+    def __init__(self, df, timepoints, groups, time_units = "day"):
+        """
+        Constructor for the CountsTable class.
+        df: pandas DataFrame
+        timepoints: list
+        groups: list
+        time_type: str , This is mainly for labeling axis on plots.
+        """
         self.counts_type_check(df)
-        self.counts = df
-        self.import_timepoints(timepoints)
-        self.import_groups(groups)
+        self.counts = self.add_multiindex(df, groups, timepoints)
+        self.time_units = time_units
+        self.time = self.get_index_dict(self.counts, 'time')
+        self.groups = self.get_index_dict(self.counts, 'group')
+        self.alpha = diversity.Alpha(self.counts)
+        
 
-
-
-    # Attributes
     
-
-
     # Methods
-    def import_groups(self, groups):
+
+    def dict_to_list(self, dictionary, index):
         """
-        Import the groups for the analysis from a list or dictionary. The groups are added as a row on the dataframe and the dictionary is assigned to the groups attribute.
+        takes a (potentially unordered dictionary), and converts it to 
+        a list that matches the order of the index provided.
+        dictionary: dictionary
+        index: list
         """
-        if not isinstance(groups, [list, dict]):
-            raise TypeError("The groups must be supllioed as a list or dictionary.")
+        if not isinstance(dictionary, dict):
+            raise TypeError("The input must be a dictionary.")
+        if not isinstance(index, list):
+            raise TypeError("The index must be a list.")
         
-        if isinstance(groups, list):
-            """
-             If the groups are supplied as a list, then the groups are assigned to the samples in the order they are presented.
-             a dictionary is then generated and assigned to the groups attribute.
-            """
-            self.counts['groups'] = groups
-            self.groups = {i: groups[i] for i in range(0, len(groups))}
-
-        if isinstance(groups, dict):
-            """
-            If the groups are supplied as a dictionary, then the groups are assigned to the samples based on the species.
-            The dictionary is then assigned to the groups attribute.
-            """
-            self.groups = groups
-            for key in groups.keys():
-                self.counts.loc[self.counts['species'] == key, 'groups'] = groups[key]
-
-
-    def import_timepoints(self, timepoints):
+        dict_list = []
+        for key in index:
+            dict_list.append(dictionary[key])
+        return dict_list
+    
+    def make_multiindex(self, df, groups, time):
         """
-        Import the timepoints for the analysis from a list or dictionary. The timepoints are added as a row on the dataframe and the dictionary is assigned to the timepoints attribute.
+        Create a multiindex from the groups and timepoints.
+        df: pandas DataFrame (counts table)
+        groups: list or dictionary
+        time: list or dictionary
         """
-        if not isinstance(timepoints, [list, dict]):
+
+        #Check the types of the groups and timepoints
+        if not isinstance(groups, (list, dict)):
+            raise TypeError("The groups must be supplied as a list or dictionary.")
+        if not isinstance(time, (list, dict)):
             raise TypeError("The timepoints must be supplied as a list or dictionary.")
+        if not isinstance(df, pd.DataFrame):
+            raise TypeError("The counts table must be a pandas DataFrame.")
         
-        if isinstance(timepoints, list):
-            """
-            If the timepoints are supplied as a list, then the timepoints are assigned to the samples in the order they are presented.
-            a dictionary is then generated and assigned to the timepoints attribute.
-            """
-            self.counts['timepoints'] = timepoints
-            self.timepoints = {i: timepoints[i] for i in range(0, len(timepoints))}
+        #Get the index as a lit, Check the lengths of the groups, timepoints, and index to ensure they match
+        index = df.index.tolist()
+        if len(index) != len(groups) or len(index) != len(time):
+            raise ValueError("The length of the groups, timepoints, and index must be the same.")
 
-        if isinstance(timepoints, dict):
-            """
-            If the timepoints are supplied as a dictionary, then the timepoints are assigned to the samples based on the species.
-            The dictionary is then assigned to the timepoints attribute.
-            """
-            self.timepoints = timepoints
-            for key in timepoints.keys():
-                self.counts.loc[self.counts['species'] == key, 'timepoints'] = timepoints[key]
-            
+        #If the groups and timepoints are supplied as dictionaries, convert them to lists
+        if isinstance(groups, dict):
+            groups = self.dict_to_list(groups, index)
+        if isinstance(time, dict):
+            time = self.dict_to_list(time, index)
+                
+        #Create a list of tuples with the timepoints and groups
+        tuples = list(zip(time, groups, index))
+        multi_index = pd.MultiIndex.from_tuples(tuples, names=['time', 'group', 'samples'])
+        return multi_index
 
-    def counts_type_check(self):
+    def add_multiindex(self, df, groups, time):
+        """
+        Add a multiindex to the counts table.
+        df: pandas DataFrame (counts table)
+        groups: list or dictionary
+        time: list or dictionary
+        """
+        Transposed_df = df.T
+        multi_index = self.make_multiindex(Transposed_df, groups, time)
+        Transposed_df.index = multi_index
+        print(Transposed_df)
+        return Transposed_df.T #Return the dataframe in the same layout as recieved.
+      
+    def counts_type_check(self, df):
         """
         Check the type of the counts table.
         """
-        if not isinstance(self.counts, pd.DataFrame):
+        if not isinstance(df, pd.DataFrame):
             raise TypeError("The counts table must be a pandas DataFrame.")
         
+    def get_index_dict(self, df, column):
+        """
+        Get a dictionary of {sample: time} from the counts table.
+        """
+        df = df.T.index.to_frame().set_index('samples')
+        return df[column].to_dict()
+    
+
+
 
 
