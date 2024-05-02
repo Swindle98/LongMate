@@ -20,7 +20,8 @@ class CountsTable:
         self.time_units = time_units
         self.time = self.get_index_dict(self.counts, 'time')
         self.groups = self.get_index_dict(self.counts, 'group')
-        self.alpha = diversity.Alpha(self.counts)
+
+        self.alpha = diversity.Alpha(self.counts, self.time_units)
         
 
     
