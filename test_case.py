@@ -28,4 +28,8 @@ print(f"Table with timepoints and groups:\n{test.counts}\n")
 print(f"Timepoints: {test.time}\n")
 print(f"Groups: {test.groups}\n")
 
-print(test.alpha.simpson())
+print('simpson diversity: \n', test.alpha.simpson(), "\n")
+
+plt = test.alpha.plot("simpson")
+
+plt.savefig("test_figs/simpson_plot.png")
