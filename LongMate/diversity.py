@@ -38,7 +38,7 @@ class Alpha(DiversityCore):
             raise TypeError("The input must be a pandas DataFrame.")
         return sk.diversity.alpha_diversity("shannon", counts, ids=counts.columns)
 
-    def plot(self, method):
+    def plot(self, method, by_group = False):
         """
         Plot the diversity over time.
         method: str, the diversity index to plot.
@@ -47,19 +47,44 @@ class Alpha(DiversityCore):
         if not isinstance(method, str):
             raise TypeError("The method must be a string.")
         
-        if method == "simpson":
-            diversity = self.simpson()
-
-        elif method == "shannon":
-            diversity = self.shannon()
+        diversity = self.get_diversity(method)
         
-        plt.plot(diversity.index.get_level_values(0), diversity)
-        plt.xlabel(f"Time ({self.time_units})")
+        if by_group == False:
+            """
+            plots all alpha values together on the same plot.
+            """
+            plt.plot(diversity.index.get_level_values(0), diversity)
+            plt.xlabel(f"Time ({self.time_units})")
+
+        if by_group == True:
+            """
+            plots each group seperately on the same plot.
+            """
+            group_labels = diversity.index.get_level_values(1).unique()
+            for group in group_labels:
+                plt.plot(diversity.loc[:, group].index.get_level_values(0), diversity.loc[:, group], label = group)
+        
+
+
         plt.ylabel("Diversity")
         plt.title(f"{method.capitalize()} Diversity Over Time")
         return plt
         
+    def get_diversity(self, method):
+        """
+        Get the diversity index.
+        method: str, the diversity index to calculate.
+        """
+        if not isinstance(method, str):
+            raise TypeError("The method must be a string.")
+        
+        if method == "simpson":
+            return self.simpson()
 
+        elif method == "shannon":
+            return self.shannon()
+        else:
+            raise ValueError("Method isn't recognised.")
 
 
 class Beta(DiversityCore):

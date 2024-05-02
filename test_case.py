@@ -30,6 +30,8 @@ print(f"Groups: {test.groups}\n")
 
 print('simpson diversity: \n', test.alpha.simpson(), "\n")
 
-plt = test.alpha.plot("simpson")
+plt = test.alpha.plot("simpson", by_group = True)
 
-plt.savefig("test_figs/simpson_plot.png")
+#plt.savefig("test_figs/simpson_plot.png")
+
+print( test.min_max_within_feature() )

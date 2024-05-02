@@ -1,5 +1,7 @@
 import pandas as pd
 from . import diversity
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 
 class CountsTable:
     """
@@ -76,19 +78,22 @@ class CountsTable:
         multi_index = pd.MultiIndex.from_tuples(tuples, names=['time', 'group', 'samples'])
         return multi_index
 
-    def add_multiindex(self, df, groups, time):
+    def add_multi_index(self, df, groups, time):
         """
         Add a multiindex to the counts table.
         df: pandas DataFrame (counts table)
         groups: list or dictionary
         time: list or dictionary
         """
+       
         Transposed_df = df.T
-        multi_index = self.make_multiindex(Transposed_df, groups, time)
+        multi_index = self.make_multi_index(Transposed_df, groups, time)
         Transposed_df.index = multi_index
         print(Transposed_df)
         return Transposed_df.T #Return the dataframe in the same layout as recieved.
-      
+        
+        
+
     def counts_type_check(self, df):
         """
         Check the type of the counts table.
@@ -103,6 +108,22 @@ class CountsTable:
         df = df.T.index.to_frame().set_index('samples')
         return df[column].to_dict()
     
+
+    # Common pre-processing steps (may be moved to a separate class): 
+
+    def min_max_within_feature(self):
+        """
+        Normalise the counts table by the minimum and maximum values within each feature.
+        """
+        return self.counts.div(self.counts.max(axis = 1), axis = 0)
+        
+    def regression(self):
+        """
+        Perform a linear regression each feature of the counts table.
+        """
+        pass
+
+        
 
 
 
