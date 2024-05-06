@@ -2,6 +2,12 @@ import pandas as pd
 from . import diversity
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
+from feature_engine.selection import DropCorrelatedFeatures
+import matplotlib.pyplot as plt
+import numpy as np
+import copy
+import sequencer
+import networkx as nx
 
 class CountsTable:
     """
@@ -18,7 +24,8 @@ class CountsTable:
         time_type: str , This is mainly for labeling axis on plots.
         """
         self.counts_type_check(df)
-        self.counts = self.add_multiindex(df, groups, timepoints)
+        self.counts = self.add_multi_index(df, groups, timepoints)
+        self.original_counts = self.counts
         self.time_units = time_units
         self.time = self.get_index_dict(self.counts, 'time')
         self.groups = self.get_index_dict(self.counts, 'group')
@@ -28,6 +35,15 @@ class CountsTable:
 
     
     # Methods
+
+    def deepcopy_with_update_counts(self, new_counts):
+        """
+        Create a copy of the object and update the counts attribute (this is used at the end of each method to update the 
+        counts attribute without altering the original object).
+        """
+        new = copy.deepcopy(self)
+        new.counts = new_counts
+        return new
 
     def dict_to_list(self, dictionary, index):
         """
@@ -46,7 +62,7 @@ class CountsTable:
             dict_list.append(dictionary[key])
         return dict_list
     
-    def make_multiindex(self, df, groups, time):
+    def make_multi_index(self, df, groups, time):
         """
         Create a multiindex from the groups and timepoints.
         df: pandas DataFrame (counts table)
@@ -115,16 +131,93 @@ class CountsTable:
         """
         Normalise the counts table by the minimum and maximum values within each feature.
         """
-        return self.counts.div(self.counts.max(axis = 1), axis = 0)
+        min_maxed_df = self.counts.div(self.counts.max(axis = 1), axis = 0)
+        return self.deepcopy_with_update_counts(min_maxed_df) 
         
-    def regression(self):
+
+
+
+    def regression(self, degrees = 2):
         """
         Perform a linear regression each feature of the counts table.
+        degrees: int, the degree of the polynomial.
         """
-        pass
+        regressed_features = []
+        for i in self.counts.iterrows():
+            name = i[0]
+            x = i[1].index.get_level_values(0)
+            y = i[1].to_numpy()
+            x = x.values.reshape(-1,1)
+            '''print(f"""name: {name}
+X: {x}
+Y: {y}
+==================
+            """)'''
+            poly = PolynomialFeatures(degrees)
+            x_poly = poly.fit_transform(x)
+            poly.fit(x_poly, y)
+            lin = LinearRegression()
+            lin.fit(x_poly, y)
+            predicted_time = np.array(range(x.min()-1, x.max()+1)).reshape(-1,1)
+            #print('predicted time points:', predicted_time)
+            y_pred = lin.predict(poly.fit_transform(predicted_time))
+            series = pd.Series(y_pred, index = predicted_time.flatten(), name=name)
+            series.index.name = 'time'
+            #print(series)
+            regressed_features.append(series)
+    
 
+        rf_df = pd.DataFrame(regressed_features)
+        print(rf_df)
+        return self.deepcopy_with_update_counts(rf_df)
         
+        
+        
+    def drop_features(self, threshold):
+        """
+        Drop features that are highly correlated.
+        threshold: float, the threshold for dropping features.
+        """
+        drop_correlated = DropCorrelatedFeatures(method='pearson', threshold = threshold)
+        print(self.counts.T)
+        dropped = drop_correlated.fit_transform(self.counts.T, self.counts.T)
+        copied_obj = self.deepcopy_with_update_counts(dropped.T)
+        copied_obj.correlated_feature_dict_ = drop_correlated.correlated_feature_dict_
+        copied_obj.correlated_feature_sets_ = drop_correlated.correlated_feature_sets_
 
+        return copied_obj
+    
+
+    # Clustering methods (may be moved to a separate class):
+
+    def the_sequencer(self, output_dir):
+        """
+        Perform the Sequencer algorithm.
+        """
+       
+
+        new_index = np.arange(len(self.counts.columns))
+        grid_series = pd.Series(self.counts.columns.to_numpy(), index=new_index)
+        grid = grid_series.index.to_numpy()
+
+        objects_list = self.counts.to_numpy()
+        estimator_list = ['EMD', 'energy', 'KL', 'L2']
+        seq = sequencer.Sequencer(grid, objects_list, estimator_list)
+
+        # execute the Sequencer
+        output_directory_path = "sequencer_output_directory"
+        final_elongation, final_sequence = seq.execute(output_dir)
+        print(grid_series)
+        print(final_sequence)
+
+        index = self.counts.index
+        new_df = self.counts.loc[index[final_sequence]]
+        print(new_df)
+
+        new_obj = self.deepcopy_with_update_counts(new_df)
+
+        return new_obj
+        
 
 
 
