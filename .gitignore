@@ -1,3 +1,4 @@
 manual testing/
 *__pycache__/
 test_figs/
+*.pkl

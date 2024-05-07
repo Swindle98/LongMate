@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: long_mate
+Version: 0.1
+Summary: A package to analyse timeseries
+Home-page: myfancywebsite.com
+Author: Sam Windle
+License: GPLv3
+Requires-Dist: numpy
+Requires-Dist: matplotlib
+Requires-Dist: scipy

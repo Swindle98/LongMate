@@ -1,25 +1,30 @@
+
 [build-system]
 requires = ["setuptools", "wheel"] # setuptools and wheel are necessary for the build
 
 [project]
-name = "LongMate"
-version = "0.1"
+name = "long_mate"
+version = "Alpha-0.1"
 description = "(Almost) Everything you need for processing longitudinal metagenomic count data in one place!"
 authors = [
     {name = "Sam Windle", email = "sam@windle.me.uk"}
 ]
 readme = "README.md"
-homepage = "myfancywebsite.com"
+homepage = "samwindle.github.io/long_mate"
 license = "GPLv3"
 
 [project.urls]
-Source = "myfancywebsite.com"
+Source = "samwindle.github.io/long_mate"
 
 [project.scripts] # Define scripts here if you have any
 
 [project.dependencies]
-numpy = "*"
+scikit-bio = "*"
+scikit-learn = "*"
+feature_engine = "*"
 matplotlib = "*"
 scipy = "*"
+pandas = "*"
+networkx = "*"
 
 [project.optional-dependencies] # Define optional dependencies here if you have any
