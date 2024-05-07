@@ -9,6 +9,16 @@ Aims:
 - PC/laptop compatible
 - Deal with inconsistent time points.
 
+## Installation
+
+LongMate can be installed using PIP (WIP)
+
+### TheSequencer
+
+Due to not having a working version of the Sequencer available from PyPI The sequencer needs to be installed directly from gihub.
+
+`pip install https://github.com/dalya/Sequencer.git`
+
 ## Paradigms/Background info
 
 ### Whats a Metagenomic count table and what formats does longMate take?
