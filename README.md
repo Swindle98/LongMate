@@ -17,22 +17,8 @@ LongMate can be installed using PIP (WIP)
 
 Due to not having a working version of the Sequencer available from PyPI The sequencer needs to be installed directly from gihub.
 
-Make a new directory for the package
-
 ``` bash
-mkdir sequencer
-```
-
-Clone the github repository into the new directory
-
-``` bash
-git clone git@github.com:dalya/Sequencer.git
-```
-
-Use Pip to install from the new directory, make sure you are pointing pip at the directory directly containing the setup.py file.
-
-``` bash
-pip install <Path/to/new/dir/with/setup.py>
+pip install thesequencer@git+https://github.com/dalya/Sequencer
 ```
 
 ## Paradigms/Background info

@@ -3,3 +3,5 @@ manual testing/
 test_figs/
 *.pkl
 long_mate.egg-info/
+build/
+dist/
