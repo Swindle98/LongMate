@@ -11,6 +11,15 @@ class DiversityCore():
         self.counts = counts
         self.time_units = time_units
 
+    def remove_negatives(self, counts):
+        """
+        Remove negative values from the counts table.
+        """
+        if not isinstance(counts, pd.DataFrame):
+            raise TypeError("The input must be a pandas DataFrame.")
+        counts[counts < 0] = 0
+        return counts
+
 
 class Alpha(DiversityCore):
     def __init__(self, counts, time_units):
@@ -22,7 +31,7 @@ class Alpha(DiversityCore):
 
         returns a pandas series for simpson diversity of each sample.
         """
-        counts = self.counts.T
+        counts = super().remove_negatives(self.counts.T)
         if not isinstance(counts, pd.DataFrame):
             raise TypeError("The input must be a pandas DataFrame.")
         return sk.diversity.alpha_diversity("simpson", counts, ids=counts.index).sort_index()
@@ -33,7 +42,7 @@ class Alpha(DiversityCore):
 
         returns a pandas series for shannon diversity of each sample.
         """
-        counts = self.counts.T
+        counts = super().remove_negatives(self.counts.T)
         if not isinstance(counts, pd.DataFrame):
             raise TypeError("The input must be a pandas DataFrame.")
         return sk.diversity.alpha_diversity("shannon", counts, ids=counts.index).sort_index()
