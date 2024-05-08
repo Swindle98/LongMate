@@ -2,7 +2,7 @@ import pandas as pd
 from . import diversity
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
-from feature_engine.selection import DropCorrelatedFeatures
+from feature_engine.selection import DropCorrelatedFeatures, DropDuplicateFeatures
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
@@ -36,6 +36,9 @@ class CountsTable:
     
     # Methods
 
+
+
+
     def deepcopy_with_update_counts(self, new_counts):
         """
         Create a copy of the object and update the counts attribute (this is used at the end of each method to update the 
@@ -43,6 +46,7 @@ class CountsTable:
         """
         new = copy.deepcopy(self)
         new.counts = new_counts
+        new.alpha = diversity.Alpha(new.counts, new.time_units)
         return new
 
     def dict_to_list(self, dictionary, index):
@@ -163,7 +167,7 @@ Y: {y}
             poly.fit(x_poly, y)
             lin = LinearRegression()
             lin.fit(x_poly, y)
-            predicted_time = np.array(range(x.min()-1, x.max()+1)).reshape(-1,1)
+            predicted_time = np.array(range(x.min(), x.max()+1)).reshape(-1,1)
             #print('predicted time points:', predicted_time)
             y_pred = lin.predict(poly.fit_transform(predicted_time))
             series = pd.Series(y_pred, index = predicted_time.flatten(), name=name)
@@ -178,7 +182,7 @@ Y: {y}
         
         
         
-    def drop_features(self, threshold):
+    def drop_correlated_features(self, threshold):
         """
         Drop features that are highly correlated.
         threshold: float, the threshold for dropping features.
@@ -192,6 +196,18 @@ Y: {y}
 
         return copied_obj
     
+    def drop_duplicated_features(self):
+        """
+        Drop duplicated features.
+        """
+        drop_duplicated = DropDuplicateFeatures()
+        dropped = drop_duplicated.fit_transform(self.counts.T, self.counts.T)
+        copied_obj = self.deepcopy_with_update_counts(dropped.T)
+        copied_obj.duplicated_feature_sets_ = drop_duplicated.duplicated_feature_sets_
+        return copied_obj
+
+
+
 
     # Clustering methods (may be moved to a separate class):
 
