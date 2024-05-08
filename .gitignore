@@ -5,3 +5,4 @@ test_figs/
 long_mate.egg-info/
 build/
 dist/
+.pytest_cache/

@@ -25,7 +25,7 @@ class Alpha(DiversityCore):
         counts = self.counts.T
         if not isinstance(counts, pd.DataFrame):
             raise TypeError("The input must be a pandas DataFrame.")
-        return sk.diversity.alpha_diversity("simpson", counts, ids=counts.index)
+        return sk.diversity.alpha_diversity("simpson", counts, ids=counts.index).sort_index()
     
     def shannon(self):
         """
@@ -36,7 +36,7 @@ class Alpha(DiversityCore):
         counts = self.counts
         if not isinstance(counts, pd.DataFrame):
             raise TypeError("The input must be a pandas DataFrame.")
-        return sk.diversity.alpha_diversity("shannon", counts, ids=counts.columns)
+        return sk.diversity.alpha_diversity("shannon", counts, ids=counts.index).sort_index()
 
     def plot(self, method, by_group = False):
         """

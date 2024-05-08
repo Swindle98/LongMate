@@ -1,3 +1,3 @@
-from .countsTable import CountsTable
+from .CountsTable import CountsTable
 
 print("longmate imported")
