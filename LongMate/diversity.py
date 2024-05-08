@@ -33,7 +33,7 @@ class Alpha(DiversityCore):
 
         returns a pandas series for shannon diversity of each sample.
         """
-        counts = self.counts
+        counts = self.counts.T
         if not isinstance(counts, pd.DataFrame):
             raise TypeError("The input must be a pandas DataFrame.")
         return sk.diversity.alpha_diversity("shannon", counts, ids=counts.index).sort_index()
