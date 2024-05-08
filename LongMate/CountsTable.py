@@ -3,6 +3,8 @@ from . import diversity
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from feature_engine.selection import DropCorrelatedFeatures, DropDuplicateFeatures
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
@@ -238,7 +240,20 @@ Y: {y}
         new_obj = self.deepcopy_with_update_counts(new_df)
 
         return new_obj
+    
+    def k_means_cluster(self, n_clusters):
+        """
+        Perform k-means clustering.
+        n_clusters: int, the number of clusters.
+        """
+
+        pass
         
 
+    def PCA(self):
+        """
+        Perform PCA.
+        """
+        pass
 
 
