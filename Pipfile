@@ -4,9 +4,20 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-build = "*"
+scikit-bio = "*"
+scikit-learn = "*"
+feature-engine = "*"
+matplotlib = "*"
+scipy = "*"
+pandas = "*"
+networkx = "*"
+thesequencer = {git = "git+https://github.com/dalya/Sequencer#egg=theSequencer"}
 
 [dev-packages]
+build = "*"
+wheel = "*"
+pytest = "*"
+twine = "*"
 
 [requires]
 python_version = "3.12"

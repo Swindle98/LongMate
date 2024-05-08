@@ -17,8 +17,16 @@ LongMate can be installed using PIP (WIP)
 
 Due to not having a working version of the Sequencer available from PyPI The sequencer needs to be installed directly from gihub.
 
+With pip:
+
 ``` bash
 pip install thesequencer@git+https://github.com/dalya/Sequencer
+```
+
+With pipenv:
+
+``` bash
+pipenv install git+https://github.com/dalya/Sequencer#egg=theSequencer
 ```
 
 ## Paradigms/Background info
