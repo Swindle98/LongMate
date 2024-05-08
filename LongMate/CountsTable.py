@@ -131,8 +131,13 @@ class CountsTable:
         """
         Normalise the counts table by the minimum and maximum values within each feature.
         """
-        min_maxed_df = self.counts.div(self.counts.max(axis = 1), axis = 0)
-        return self.deepcopy_with_update_counts(min_maxed_df) 
+        def normalize(row):
+            return (row - row.min()) / (row.max() - row.min())
+
+        
+        df_normalized = self.counts.apply(normalize, axis=1)
+
+        return self.deepcopy_with_update_counts(df_normalized) 
         
 
 
@@ -201,7 +206,7 @@ Y: {y}
         grid = grid_series.index.to_numpy()
 
         objects_list = self.counts.to_numpy()
-        estimator_list = ['EMD', 'energy', 'KL', 'L2']
+        estimator_list = ['EMD', 'energy', 'L2']
         seq = sequencer.Sequencer(grid, objects_list, estimator_list)
 
         # execute the Sequencer
