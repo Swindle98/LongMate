@@ -238,7 +238,8 @@ Y: {y}
         print(new_df)
 
         new_obj = self.deepcopy_with_update_counts(new_df)
-
+        new_obj.seq_obj = seq
+        
         return new_obj
     
     def k_means_cluster(self, n_clusters):
