@@ -213,7 +213,7 @@ Y: {y}
 
     # Clustering methods (may be moved to a separate class):
 
-    def the_sequencer(self, output_dir):
+    def the_sequencer(self, output_dir, N_best_estimators=3):
         """
         Perform the Sequencer algorithm.
         """
@@ -229,7 +229,7 @@ Y: {y}
 
         # execute the Sequencer
         output_directory_path = "sequencer_output_directory"
-        final_elongation, final_sequence = seq.execute(output_dir)
+        final_elongation, final_sequence = seq.execute(output_dir,to_average_N_best_estimators=True, N_best_estimators=N_best_estimators)
         print(grid_series)
         print(final_sequence)
 
@@ -239,7 +239,7 @@ Y: {y}
 
         new_obj = self.deepcopy_with_update_counts(new_df)
         new_obj.seq_obj = seq
-        
+
         return new_obj
     
     def k_means_cluster(self, n_clusters):
