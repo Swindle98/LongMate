@@ -31,6 +31,11 @@ class CountsTable:
         self.time_units = time_units
         self.time = self.get_index_dict(self.counts, 'time')
         self.groups = self.get_index_dict(self.counts, 'group')
+        self.greater_than_0 = self.get_appearance_subset(0)
+        self.greater_than_50 = self.get_appearance_subset(50)
+        self.greater_than_60 = self.get_appearance_subset(60)
+        self.greater_than_70 = self.get_appearance_subset(70)
+        self.greater_than_90 = self.get_appearance_subset(90)
 
         self.alpha = diversity.Alpha(self.counts, self.time_units)
         
@@ -129,9 +134,28 @@ class CountsTable:
         """
         df = df.T.index.to_frame().set_index('samples')
         return df[column].to_dict()
+
     
 
-    # Common pre-processing steps (may be moved to a separate class): 
+    def get_appearance_subset(self, group):
+        """
+        Creates subsets of the counts table based on the number of sampels that a feature appears in.
+        !this will assume that 0 values aren't present in your data (could just be too low for the detection limit)
+        group: int, the % of samples a feature must appear in to be included.
+        """
+        appearances = self.counts.gt(0).sum(axis=1)
+        new_df = self.counts.loc[appearances >= group]
+        return new_df
+    
+
+    # Common pre-processing steps (may be moved to a separate class):
+    def time_cut_off(self, time):
+        """
+        Cut off the counts table at a certain timepoint.
+        time: int, the timepoint to cut off at.
+        """
+        new_df = self.counts.loc[:, self.counts.columns.get_level_values(0) <= time]
+        return self.deepcopy_with_update_counts(new_df) 
 
     def min_max_within_feature(self):
         """
@@ -229,7 +253,7 @@ Y: {y}
 
         # execute the Sequencer
         output_directory_path = "sequencer_output_directory"
-        final_elongation, final_sequence = seq.execute(output_dir,to_average_N_best_estimators=True, N_best_estimators=N_best_estimators)
+        final_elongation, final_sequence = seq.execute(output_dir,to_average_N_best_estimators=True, number_of_best_estimators=N_best_estimators)
         print(grid_series)
         print(final_sequence)
 
