@@ -31,7 +31,7 @@ class CountsTable:
         self.time_units = time_units
         self.time = self.get_index_dict(self.counts, 'time')
         self.groups = self.get_index_dict(self.counts, 'group')
-        
+
         self.greater_than_0 = self.get_appearance_subset(0)
         self.greater_than_10 = self.get_appearance_subset(10)
         self.greater_than_20 = self.get_appearance_subset(20)
@@ -153,13 +153,22 @@ class CountsTable:
     def set_counts(self, df):
         """
         Set the counts table attribute to another dataframe present in the object (").
-        df: str, the counts table.
+        If no argument is provided, the original counts table is used.
+        df: str or None, the counts table.
         """
-        if not isinstance(df, str):
-            raise TypeError("The counts table must be a string.")
-        
-        if 
-        self.counts = new_counts
+        dataframes = {
+            "original": self.original_counts,
+            "greater_than_0": self.greater_than_0,
+            "greater_than_10": self.greater_than_10,
+            "greater_than_20": self.greater_than_20,
+            "greater_than_30": self.greater_than_30,
+            "greater_than_40": self.greater_than_40,
+            "greater_than_50": self.greater_than_50,
+            "greater_than_60": self.greater_than_60,
+            "greater_than_70": self.greater_than_70,
+            "greater_than_90": self.greater_than_90
+        }
+        self.counts = dataframes[df]
     
 
     # Common pre-processing steps (may be moved to a separate class):
