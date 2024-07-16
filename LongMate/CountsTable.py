@@ -172,10 +172,10 @@ class CountsTable:
         if isinstance(df, str):
             if df not in dataframes.keys():
                 raise ValueError(f"""The dataframe must be one of the following:${dataframes.keys()}""")
+            else :
+                self.counts = dataframes[df]
         else:
             raise TypeError("The dataframe must be a string or empty.")
-      
-        self.counts = dataframes[df]
     
 
     # Common pre-processing steps (may be moved to a separate class):
