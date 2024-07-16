@@ -156,19 +156,29 @@ class CountsTable:
         If no argument is provided, the original counts table is used.
         df: str or None, the counts table.
         """
+
         dataframes = {
-            "original": self.original_counts,
-            "greater_than_0": self.greater_than_0,
-            "greater_than_10": self.greater_than_10,
-            "greater_than_20": self.greater_than_20,
-            "greater_than_30": self.greater_than_30,
-            "greater_than_40": self.greater_than_40,
-            "greater_than_50": self.greater_than_50,
-            "greater_than_60": self.greater_than_60,
-            "greater_than_70": self.greater_than_70,
-            "greater_than_90": self.greater_than_90
+        "original": self.original_counts,
+        "greater_than_0": self.greater_than_0,
+        "greater_than_10": self.greater_than_10,
+        "greater_than_20": self.greater_than_20,
+        "greater_than_30": self.greater_than_30,
+        "greater_than_40": self.greater_than_40,
+        "greater_than_50": self.greater_than_50,
+        "greater_than_60": self.greater_than_60,
+        "greater_than_70": self.greater_than_70,
+        "greater_than_90": self.greater_than_90
         }
-        self.counts = dataframes[df]
+        if isinstance(df, str or None):
+            if df not in dataframes.keys():
+                raise ValueError(f"""The dataframe must be one of the following:${dataframes.keys()}""")
+        else:
+            raise TypeError("The dataframe must be a string or empty.")
+
+        if df is None:
+            self.counts = self.original_counts
+        else:          
+            self.counts = dataframes[df]
     
 
     # Common pre-processing steps (may be moved to a separate class):
