@@ -52,7 +52,14 @@ class CountsTable:
     
     # Methods
 
-
+    def add_dataframe(self, df, name):
+        """
+        Add a dataframe to the object.
+        df: pandas DataFrame or function that returns a DataFrame.
+        name: str, the name of the dataframe.
+        """
+        self.counts_type_check(df)
+        self.dataframes[name] = df
 
 
     def deepcopy_with_update_counts(self, new_counts):
