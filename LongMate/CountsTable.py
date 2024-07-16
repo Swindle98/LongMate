@@ -150,7 +150,7 @@ class CountsTable:
         new_df = self.counts.loc[appearances >= group]
         return new_df
     
-    def set_counts(self, df):
+    def set_counts(self, df="original"):
         """
         Set the counts table attribute to another dataframe present in the object (").
         If no argument is provided, the original counts table is used.
@@ -169,16 +169,13 @@ class CountsTable:
         "greater_than_70": self.greater_than_70,
         "greater_than_90": self.greater_than_90
         }
-        if isinstance(df, str or None):
+        if isinstance(df, str):
             if df not in dataframes.keys():
                 raise ValueError(f"""The dataframe must be one of the following:${dataframes.keys()}""")
         else:
             raise TypeError("The dataframe must be a string or empty.")
-
-        if df is None:
-            self.counts = self.original_counts
-        else:          
-            self.counts = dataframes[df]
+      
+        self.counts = dataframes[df]
     
 
     # Common pre-processing steps (may be moved to a separate class):
