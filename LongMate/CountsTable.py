@@ -182,6 +182,8 @@ class CountsTable:
                 self.counts = dataframes[df]
         else:
             raise TypeError("The dataframe must be a string or empty.")
+        
+        return self
     
 
     # Common pre-processing steps (may be moved to a separate class):
