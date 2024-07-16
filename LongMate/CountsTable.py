@@ -32,16 +32,20 @@ class CountsTable:
         self.time = self.get_index_dict(self.counts, 'time')
         self.groups = self.get_index_dict(self.counts, 'group')
 
-        self.greater_than_0 = self.get_appearance_subset(0)
-        self.greater_than_10 = self.get_appearance_subset(10)
-        self.greater_than_20 = self.get_appearance_subset(20)
-        self.greater_than_30 = self.get_appearance_subset(30)
-        self.greater_than_40 = self.get_appearance_subset(40)
-        self.greater_than_50 = self.get_appearance_subset(50)
-        self.greater_than_60 = self.get_appearance_subset(60)
-        self.greater_than_70 = self.get_appearance_subset(70)
-        self.greater_than_90 = self.get_appearance_subset(90)
-
+        self.dataframes = {
+        "original": self.original_counts,
+        "greater_than_0": self.get_appearance_subset(0),
+        "greater_than_10": self.get_appearance_subset(10),
+        "greater_than_20": self.get_appearance_subset(20),
+        "greater_than_30": self.get_appearance_subset(30),
+        "greater_than_40": self.get_appearance_subset(40),
+        "greater_than_50": self.get_appearance_subset(50),
+        "greater_than_60": self.get_appearance_subset(60),
+        "greater_than_70": self.get_appearance_subset(70),
+        "greater_than_90": self.get_appearance_subset(90),
+        "in_all_timepoints": self.get_appearance_subset(100),
+        "average_of_timepoints": self.get_average_of_timepoints()
+        }
         self.alpha = diversity.Alpha(self.counts, self.time_units)
         
 
@@ -150,25 +154,20 @@ class CountsTable:
         new_df = self.counts.loc[appearances >= group]
         return new_df
     
-    def set_counts(self, df="original"):
+    def get_average_of_timepoints(self):
         """
-        Set the counts table attribute to another dataframe present in the object (").
+        provides the average counts for each feature per timepoint.
+        """
+        return self.counts.groupby(level=0, axis=1).mean()
+
+    def set_counts(self, df="original"):
+        f"""
+        Set the counts table attribute to another dataframe present in the object (${self.dataframes.keys()}).
         If no argument is provided, the original counts table is used.
         df: str or None, the counts table.
         """
+        dataframes = self.dataframes
 
-        dataframes = {
-        "original": self.original_counts,
-        "greater_than_0": self.greater_than_0,
-        "greater_than_10": self.greater_than_10,
-        "greater_than_20": self.greater_than_20,
-        "greater_than_30": self.greater_than_30,
-        "greater_than_40": self.greater_than_40,
-        "greater_than_50": self.greater_than_50,
-        "greater_than_60": self.greater_than_60,
-        "greater_than_70": self.greater_than_70,
-        "greater_than_90": self.greater_than_90
-        }
         if isinstance(df, str):
             if df not in dataframes.keys():
                 raise ValueError(f"""The dataframe must be one of the following:${dataframes.keys()}""")
@@ -179,6 +178,7 @@ class CountsTable:
     
 
     # Common pre-processing steps (may be moved to a separate class):
+
     def time_cut_off(self, time):
         """
         Cut off the counts table at a certain timepoint.
@@ -198,9 +198,6 @@ class CountsTable:
         df_normalized = self.counts.apply(normalize, axis=1)
 
         return self.deepcopy_with_update_counts(df_normalized) 
-        
-
-
 
     def regression(self, degrees = 2):
         """
