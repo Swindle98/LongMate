@@ -3,8 +3,11 @@ from . import diversity
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from feature_engine.selection import DropCorrelatedFeatures, DropDuplicateFeatures
+from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from skbio.stats.composition import clr, multi_replace
+from skbio.stats.distance import DistanceMatrix
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
@@ -60,6 +63,7 @@ class CountsTable:
         """
         self.counts_type_check(df)
         self.dataframes[name] = df
+        return self
 
 
     def deepcopy_with_update_counts(self, new_counts):
@@ -317,4 +321,32 @@ Y: {y}
         """
         pass
 
+    def perform_clr(self):
+        """
+        Perform the centered log ratio transformation.
+        """
+        index = self.counts.index
+        columns = self.counts.columns
+        non_zeroed = multi_replace(self.counts.T) #replaces 0 values with small non-zero values
+        clr_transformed = clr(non_zeroed)  #perform the clr transformation on the matrix with 0 values replaced.
+        clr_df = pd.DataFrame(clr_transformed.T, index=index, columns = columns) #return the dataframe to its original layout.
+        
+        return self.deepcopy_with_update_counts(clr_df)
 
+    def atichson_distance(self):
+        """
+        Calculate the Atichson distance between all samples.
+
+        combines the clr transformation and euclidean distance calculation..
+
+        TODO: this currently only works on counts tables that are the oringinal style of time, group, samples multidex. any variation on these columns will break this method.
+        """
+        Clr_df = self.perform_clr()
+        distance_matrix = DistanceMatrix(euclidean_distances(Clr_df.counts.T), Clr_df.counts.columns.get_level_values(2).to_list())
+        
+        return distance_matrix
+        
+
+
+
+        
