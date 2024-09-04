@@ -6,8 +6,10 @@ from feature_engine.selection import DropCorrelatedFeatures, DropDuplicateFeatur
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
+from sklearn.manifold import MDS
 from skbio.stats.composition import clr, multi_replace
 from skbio.stats.distance import DistanceMatrix
+from skbio.diversity import beta_diversity
 import matplotlib.pyplot as plt
 import numpy as np
 import copy
@@ -34,21 +36,8 @@ class CountsTable:
         self.time_units = time_units
         self.time = self.get_index_dict(self.counts, 'time')
         self.groups = self.get_index_dict(self.counts, 'group')
-
-        self.dataframes = {
-        "original": self.original_counts,
-        "greater_than_0": self.get_appearance_subset(0),
-        "greater_than_10": self.get_appearance_subset(10),
-        "greater_than_20": self.get_appearance_subset(20),
-        "greater_than_30": self.get_appearance_subset(30),
-        "greater_than_40": self.get_appearance_subset(40),
-        "greater_than_50": self.get_appearance_subset(50),
-        "greater_than_60": self.get_appearance_subset(60),
-        "greater_than_70": self.get_appearance_subset(70),
-        "greater_than_90": self.get_appearance_subset(90),
-        "in_all_timepoints": self.get_appearance_subset(100),
-        "average_of_timepoints": self.get_average_of_timepoints()
-        }
+        self.dm = {}
+        self.dataframes = self.create_default_dataframes()
         self.alpha = diversity.Alpha(self.counts, self.time_units)
         
 
@@ -64,6 +53,31 @@ class CountsTable:
         self.counts_type_check(df)
         self.dataframes[name] = df
         return self
+    
+    def create_default_dataframes(self, reset=False):
+        """
+        Create the default dataframes.
+    
+        """
+        if reset:
+            self.dataframes = {}
+
+
+        dataframes = {
+        "original": self.original_counts,
+        "greater_than_0": self.get_appearance_subset(0),
+        "greater_than_10": self.get_appearance_subset(10),
+        "greater_than_20": self.get_appearance_subset(20),
+        "greater_than_30": self.get_appearance_subset(30),
+        "greater_than_40": self.get_appearance_subset(40),
+        "greater_than_50": self.get_appearance_subset(50),
+        "greater_than_60": self.get_appearance_subset(60),
+        "greater_than_70": self.get_appearance_subset(70),
+        "greater_than_90": self.get_appearance_subset(90),
+        "in_all_timepoints": self.get_appearance_subset(100),
+        "average_of_timepoints": self.get_average_of_timepoints()
+        }
+        return dataframes      
 
 
     def deepcopy_with_update_counts(self, new_counts):
@@ -192,13 +206,23 @@ class CountsTable:
 
     # Common pre-processing steps (may be moved to a separate class):
 
-    def time_cut_off(self, time):
+    def time_cut_off(self, time, replace_defaults=True):
         """
         Cut off the counts table at a certain timepoint.
         time: int, the timepoint to cut off at.
         """
+
         new_df = self.counts.loc[:, self.counts.columns.get_level_values(0) <= time]
-        return self.deepcopy_with_update_counts(new_df) 
+        
+        
+        if replace_defaults:
+            self.counts = new_df
+            self.create_default_dataframes(reset=True)
+            return self
+
+        else:
+            return self.deepcopy_with_update_counts(new_df)
+
 
     def min_max_within_feature(self):
         """
@@ -333,7 +357,11 @@ Y: {y}
         
         return self.deepcopy_with_update_counts(clr_df)
 
-    def atichson_distance(self):
+
+# distance/dissimilaties maticies 
+
+
+    def aitchison_distance(self):
         """
         Calculate the Atichson distance between all samples.
 
@@ -343,10 +371,35 @@ Y: {y}
         """
         Clr_df = self.perform_clr()
         distance_matrix = DistanceMatrix(euclidean_distances(Clr_df.counts.T), Clr_df.counts.columns.get_level_values(2).to_list())
-        
-        return distance_matrix
+        self.dm["aitchison"] = distance_matrix
+        return copy.deepcopy(self)
         
 
+    def euclidean_distance(self):
+        """
+        Calculate the Euclidean distance between all samples.
+        """
+        distance_matrix = DistanceMatrix(euclidean_distances(self.counts.T), self.counts.columns.get_level_values(2).to_list())
+        self.dm['euclidean'] = distance_matrix
+        return copy.deepcopy(self)
+    
 
-
+    def bray_curtis_distance(self):
+        """
+        Calculate the Bray-Curtis distance between all samples.
+        """
         
+        dissimilarity_matrix = beta_diversity('braycurtis', self.counts.T, ids=self.counts.columns.get_level_values(2))
+        self.dm["bray_curtis"] = dissimilarity_matrix
+        return copy.deepcopy(self)
+
+
+    def get_MDS_on_distance_matrix(self, distance_matrix, n_components=2):
+        """
+        Perform MDS on a distance matrix.
+        distance_matrix: skbio DistanceMatrix
+        n_components: int, the number of components.
+        """
+        mds = MDS(n_components=n_components, dissimilarity='precomputed')
+        results = mds.fit(distance_matrix.data)
+        return results.embedding_        
