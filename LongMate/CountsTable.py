@@ -56,14 +56,15 @@ class CountsTable:
     
     def create_default_dataframes(self, reset=False):
         """
-        Create the default dataframes.
+        Create the default dataframes. based on the currently active counts table.
+        reset: bool, if True, the dataframes attribute is reset to beiong an empty dictionary.
     
         """
         if reset:
             self.dataframes = {}
 
 
-        dataframes = {
+        self.dataframes = {
         "original": self.original_counts,
         "greater_than_0": self.get_appearance_subset(0),
         "greater_than_10": self.get_appearance_subset(10),
@@ -77,7 +78,8 @@ class CountsTable:
         "in_all_timepoints": self.get_appearance_subset(100),
         "average_of_timepoints": self.get_average_of_timepoints()
         }
-        return dataframes      
+
+        return self.dataframes      
 
 
     def deepcopy_with_update_counts(self, new_counts):
@@ -184,6 +186,12 @@ class CountsTable:
         provides the average counts for each feature per timepoint.
         """
         return self.counts.groupby(level=0, axis=1).mean()
+
+    def get_deviation_of_timepoints(self):
+        """
+        provides the standard deviation for each feature per timepoint.
+        """
+        return self.counts.groupby(level=0, axis=1).std()
 
     def set_counts(self, df="original"):
         f"""
@@ -301,7 +309,7 @@ Y: {y}
 
     # Clustering methods (may be moved to a separate class):
 
-    def the_sequencer(self, output_dir, N_best_estimators=3):
+    def the_sequencer(self, output_dir, N_best_estimators=3, estimator_list=['EMD', 'energy', 'L2']):
         """
         Perform the Sequencer algorithm.
         """
@@ -312,7 +320,7 @@ Y: {y}
         grid = grid_series.index.to_numpy()
 
         objects_list = self.counts.to_numpy()
-        estimator_list = ['EMD', 'energy', 'L2']
+        
         seq = sequencer.Sequencer(grid, objects_list, estimator_list)
 
         # execute the Sequencer
@@ -328,7 +336,7 @@ Y: {y}
         new_obj = self.deepcopy_with_update_counts(new_df)
         new_obj.seq_obj = seq
 
-        return new_obj
+        return new_obj, seq
     
     def k_means_cluster(self, n_clusters):
         """
