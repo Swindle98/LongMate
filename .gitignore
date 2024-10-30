@@ -1,0 +1,8 @@
+manual testing/
+*__pycache__/
+test_figs/
+*.pkl
+long_mate.egg-info/
+build/
+dist/
+.pytest_cache/
